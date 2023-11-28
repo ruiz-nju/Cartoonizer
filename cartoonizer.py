@@ -154,7 +154,6 @@ def display_image(image, image_label, max_size=500):
 
     scale = min(max_size / width, max_size / height)
 
-    # 应用等比缩放
     new_width = int(width * scale)
     new_height = int(height * scale)
     img = img.resize((new_width, new_height), Image.LANCZOS)
