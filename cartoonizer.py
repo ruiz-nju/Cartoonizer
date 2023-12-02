@@ -8,7 +8,7 @@ from PIL import Image, ImageTk
 
 
 def build_centroids(histogram):
-    max_size = 80  # 质心数组的最小尺寸
+    max_size = 80  # 质心数组的最大尺寸
     centroids = np.array([128])  # 初始的质心数组
 
     while True:
@@ -77,7 +77,7 @@ def cartoonize(image):
     output_image = np.array(image)
     height, width, channels = output_image.shape
 
-    # 优化的双边滤波器
+    # 双边滤波器
     for i in range(channels):
         output_image[:, :, i] = cv2.bilateralFilter(output_image[:, :, i], 9, 75, 75)
 
