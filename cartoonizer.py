@@ -77,24 +77,27 @@ def cartoonize(image):
     output_image = np.array(image)
     height, width, channels = output_image.shape
 
-    # 双边滤波器
-    for i in range(channels):
-        output_image[:, :, i] = cv2.bilateralFilter(output_image[:, :, i], 9, 75, 75)
-
     # 边缘检测
     edges = cv2.Canny(output_image, 100, 200)
 
     output_image = cv2.cvtColor(output_image, cv2.COLOR_RGB2HSV)
 
+    # 双边滤波器
+    for i in range(channels):
+        output_image[:, :, i] = cv2.bilateralFilter(output_image[:, :, i], 9, 75, 75)
+
+    # 统计灰度值 创建直方图
     hists = []
     for i in range(channels):
         histogram, _ = np.histogram(output_image[:, :, i], bins=np.arange(256 + 1))
         hists.append(histogram)
 
+    # 构建质心数组
     centroids = []
     for histogram in hists:
         centroids.append(build_centroids(histogram))
 
+    # 先降维至二维 处理结束后转化回三维
     output_image = output_image.reshape((-1, channels))
     for i in range(channels):
         channel = output_image[:, i]
@@ -105,7 +108,7 @@ def cartoonize(image):
     output_image = output_image.reshape((height, width, channels))
     output_image = cv2.cvtColor(output_image, cv2.COLOR_HSV2RGB)
 
-    # 更好的轮廓处理
+    # 轮廓处理
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cv2.drawContours(output_image, contours, -1, (0, 0, 0), thickness=1)
 
@@ -124,25 +127,20 @@ def set_background(window, path):
     bg_label.image = bg_image
 
 
-# 创建一个 Tkinter 窗口
 root = tk.Tk()
 root.title("cartoonizer")
 root.geometry("1500x750")
 root.resizable(width=False, height=False)
 
-
-# 设置背景图像
 set_background(root, "background.png")
 
 
 def open_image():
     file_path = filedialog.askopenfilename()
     if file_path:
-        # 读取并显示原始图像
         original_image = cv2.imread(file_path)
         display_image(original_image, original_image_label)
 
-        # 处理并显示卡通化图像
         cartoon_image = cartoonize(original_image)
         display_image(cartoon_image, cartoonized_image_label)
         cv2.imwrite("output.jpg", cartoon_image)
@@ -172,12 +170,12 @@ cartoonized_image_label.pack(side=tk.RIGHT, padx=10, pady=20)
 
 # 添加按钮样式
 button_style = {
-    "font": ("楷体", 20),  # 设置字体样式
-    "bg": "#4a7abc",  # 设置背景颜色
-    "fg": "white",  # 设置字体颜色
-    "activebackground": "#6b9edf",  # 设置激活时的背景颜色
-    "padx": 10,  # 设置水平内边距
-    "pady": 5,  # 设置垂直内边距
+    "font": ("楷体", 20),
+    "bg": "#4a7abc",
+    "fg": "white",
+    "activebackground": "#6b9edf",
+    "padx": 10,
+    "pady": 5,
 }
 
 open_button = tk.Button(root, text="打开图像", command=open_image, **button_style)
